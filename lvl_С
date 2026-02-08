@@ -1,0 +1,111 @@
+import random
+import time
+
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        swapped = False
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                swapped = True
+        if not swapped:
+            break
+    return arr
+
+def create_matrix(n):
+    return [[random.randint(1, 100) for _ in range(n)] for _ in range(n)]
+
+def shift_rows(matrix, k=1):
+    n = len(matrix)
+    shifted = []
+    for row in matrix:
+        k_effective = k % n
+        shifted_row = row[-k_effective:] + row[:-k_effective]
+        shifted.append(shifted_row)
+    return shifted
+
+def selection_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        min_idx = i
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_idx]:
+                min_idx = j
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+    return arr
+
+def sort_columns(matrix):
+    n = len(matrix)
+    transposed = [[matrix[j][i] for j in range(n)] for i in range(n)]
+    sorted_transposed = [selection_sort(col) for col in transposed]
+    sorted_matrix = [[sorted_transposed[i][j] for i in range(n)] for j in range(n)]
+    return sorted_matrix
+
+def find_max_linear(arr):
+    max_val = arr[0]
+    for num in arr[1:]:
+        if num > max_val:
+            max_val = num
+    return max_val
+
+def find_max_by_bubble(arr):
+    sorted_arr = bubble_sort(arr.copy())
+    return sorted_arr[-1]
+
+# Задача 1
+arr = [random.randint(1, 1000) for _ in range(1000)]
+arr1 = arr.copy()
+arr2 = arr.copy()
+
+start = time.time()
+bubble_sorted = bubble_sort(arr1)
+bubble_time = time.time() - start
+
+start = time.time()
+builtin_sorted = sorted(arr2)
+builtin_time = time.time() - start
+
+print("1. Пузырьковая сортировка время:", bubble_time)
+print("1. Встроенная сортировка время:", builtin_time)
+print("1. Вычислительная сложность пузырьковой сортировки выше")
+
+# Задача 2
+n = 5
+matrix = create_matrix(n)
+print("\n2. Исходная матрица:")
+for row in matrix:
+    print(row)
+shifted = shift_rows(matrix, 2)
+print("2. Матрица после сдвига строк на 2:")
+for row in shifted:
+    print(row)
+
+# Задача 3
+matrix2 = create_matrix(n)
+print("\n3. Исходная матрица:")
+for row in matrix2:
+    print(row)
+sorted_matrix = sort_columns(matrix2)
+print("3. Матрица с отсортированными столбцами:")
+for row in sorted_matrix:
+    print(row)
+
+# Задача 4
+print("\n4. Сравнение поиска максимума:")
+sizes = [100, 500, 1000, 2000]
+print("Размер | Линейный поиск (сек) | Через сортировку (сек)")
+for size in sizes:
+    arr_test = [random.randint(1, 10000) for _ in range(size)]
+    
+    start = time.time()
+    max1 = find_max_linear(arr_test)
+    time1 = time.time() - start
+    
+    start = time.time()
+    max2 = find_max_by_bubble(arr_test)
+    time2 = time.time() - start
+    
+    print(f"{size:6} | {time1:20.6f} | {time2:25.6f}")
+
+print("\n4. Линейный поиск эффективнее для нахождения максимума")
