@@ -1,0 +1,47 @@
+import requests
+
+API_KEY = '04c9a2fe64449b0348eb38d5920909f2'
+
+def get_weather_multiple(cities):
+    weather_data = {}
+    temps = []
+    winds = []
+    
+    print("=" * 60)
+    print(f"{'Город':<15} {'Температура':<12} {'Влажность':<10} {'Ветер':<8}")
+    print("-" * 60)
+    
+    for city in cities:
+        url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang=ru'
+        response = requests.get(url)
+        data = response.json()
+        
+        if response.status_code == 200:
+            main = data['main']
+            wind = data['wind']['speed']
+            humidity = main['humidity']
+            temp = main['temp']
+            
+            weather_data[city] = {'temp': temp, 'humidity': humidity, 'wind': wind}
+            temps.append(temp)
+            winds.append(wind)
+            
+            print(f"{city:<15} {temp:>6.1f}°C    {humidity:>6}%    {wind:>5.1f} м/с")
+        else:
+            print(f"{city:<15} {'Ошибка'}")
+    
+    print("=" * 60)
+    
+    if temps:
+        warmest = max(weather_data.items(), key=lambda x: x[1]['temp'])[0]
+        coldest = min(weather_data.items(), key=lambda x: x[1]['temp'])[0]
+        windiest = max(weather_data.items(), key=lambda x: x[1]['wind'])[0]
+        
+        print(f"Самый тёплый: {warmest} ({max(temps):.1f}°C)")
+        print(f"Самый холодный: {coldest} ({min(temps):.1f}°C)")
+        print(f"Самый ветренный: {windiest} ({max(winds):.1f} м/с)")
+
+# Только крупные города России
+cities = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 
+          'Нижний Новгород', 'Челябинск', 'Самара', 'Омск', 'Ростов-на-Дону']
+get_weather_multiple(cities)
