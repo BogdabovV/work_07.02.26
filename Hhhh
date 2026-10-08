@@ -1,0 +1,30 @@
+3
+tree = [None, 1, 2, 3, 4, 5, None, 6]
+
+def check(i):
+    if i >= len(tree) or tree[i] is None:
+        return 0
+    left_h = check(2 * i)
+    if left_h == -1:
+        return -1
+    right_h = check(2 * i + 1)
+    if right_h == -1:
+        return -1
+    if abs(left_h - right_h) > 1:
+        return -1
+    return max(left_h, right_h) + 1
+
+def is_balanced():
+    return check(1) != -1
+
+print(is_balanced())
+4
+tree = [None, 1, 2, 3, 4, 5, None, 6]
+
+def to_list(i):
+    if i >= len(tree) or tree[i] is None:
+        return None
+    return [tree[i], to_list(2 * i + 1)]
+
+result = to_list(1)
+print(result)
