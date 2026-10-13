@@ -1,0 +1,109 @@
+# Класс узла — это как папка или файл
+class Node:
+    def __init__(self, name, is_file=False, size=0):
+        self.name = name          # имя
+        self.is_file = is_file    # файл или папка?
+        self.children = []        # что внутри
+        self.size = size          # размер (только у файлов)
+        self.parent = None        # кто родитель
+
+    def add_child(self, node):
+        node.parent = self
+        self.children.append(node)
+
+
+# Сама файловая система
+class FileSystem:
+    def __init__(self):
+        self.root = Node("/")     # корень
+        self.current = self.root  # где мы сейчас
+
+    # ищем ребёнка по имени
+    def _find(self, name):
+        for child in self.current.children:
+            if child.name == name:
+                return child
+        return None
+
+    # создать папку
+    def mkdir(self, name):
+        if self._find(name):
+            print(f"'{name}' уже существует")
+            return
+        self.current.add_child(Node(name, is_file=False))
+        print(f"mkdir: {name}")
+
+    # создать файл
+    def touch(self, name, size=10):
+        if self._find(name):
+            print(f"'{name}' уже существует")
+            return
+        self.current.add_child(Node(name, is_file=True, size=size))
+        print(f"touch: {name} ({size} b)")
+
+    # показать что в папке
+    def ls(self):
+        print(f"ls {self.current.name}:")
+        for child in self.current.children:
+            kind = "FILE" if child.is_file else "DIR "
+            extra = f" {child.size}b" if child.is_file else ""
+            print(f"  [{kind}] {child.name}{extra}")
+
+    # перейти в папку (или назад через ..)
+    def cd(self, name):
+        if name == "..":
+            if self.current.parent:
+                self.current = self.current.parent
+            return
+        node = self._find(name)
+        if node and not node.is_file:
+            self.current = node
+        else:
+            print(f"Нет такой папки: {name}")
+
+    # считаем размер рекурсией
+    def total_size(self, node=None):
+        if node is None:
+            node = self.root
+        if node.is_file:
+            return node.size
+        return sum(self.total_size(c) for c in node.children)
+
+    # ищем самый глубокий путь
+    def deepest_path(self, node=None, path=""):
+        if node is None:
+            node = self.root
+            path = node.name
+
+        if not node.children:
+            return path, 1
+
+        best_path, best_depth = path, 1
+        for child in node.children:
+            sep = "" if path.endswith("/") else "/"
+            sub_path, sub_depth = self.deepest_path(child, f"{path}{sep}{child.name}")
+            if sub_depth + 1 > best_depth:
+                best_depth = sub_depth + 1
+                best_path = sub_path
+        return best_path, best_depth
+
+
+# Проверяем, как всё работает
+fs = FileSystem()
+
+fs.mkdir("home")
+fs.cd("home")
+fs.mkdir("docs")
+fs.touch("readme.txt", size=100)
+
+fs.cd("docs")
+fs.touch("report.pdf", size=500)
+fs.mkdir("archive")
+fs.cd("archive")
+fs.touch("old.zip", size=1000)
+
+print("\n--- Результаты ---")
+print("Размер всей ФС:", fs.total_size(fs.root), "байт")
+
+path, depth = fs.deepest_path(fs.root)
+print(f"Самый глубокий путь: {path}  (глубина {depth})")
